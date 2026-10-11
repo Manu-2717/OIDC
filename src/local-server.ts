@@ -1,4 +1,4 @@
-import { createApp } from "./app.js";
+import { createApp } from "./create-app.js";
 import clientDefinitions from "../clients.json" with { type: "json" };
 import { loadConfig } from "./config.js";
 import { buildDeps } from "./deps.js";

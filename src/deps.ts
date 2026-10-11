@@ -1,6 +1,6 @@
 import { Pool } from "pg";
 import { AccountService, PgAccountRepo } from "./accounts.js";
-import type { AppDeps } from "./app.js";
+import type { AppDeps } from "./create-app.js";
 import { PgAuditLog } from "./audit.js";
 import { loadClients } from "./clients.js";
 import type { Config } from "./config.js";

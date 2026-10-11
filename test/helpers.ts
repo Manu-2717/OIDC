@@ -3,7 +3,7 @@ import { createServer, type Server } from "node:http";
 import type { AddressInfo } from "node:net";
 import { exportJWK, generateKeyPair } from "jose";
 import { AccountService, MemoryAccountRepo, type GitHubProfile } from "../src/accounts.js";
-import { createApp, type AppDeps } from "../src/app.js";
+import { createApp, type AppDeps } from "../src/create-app.js";
 import { MemoryAuditLog } from "../src/audit.js";
 import { loadClients } from "../src/clients.js";
 import type { Config } from "../src/config.js";

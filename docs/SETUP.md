@@ -47,7 +47,7 @@ For local development make a second OAuth app whose callback is `http://localhos
 ## 4. Hosting (Vercel)
 
 1. Push this repository to GitHub (for example `USAR-FOSS/oidc`).
-2. Vercel, **Add New Project**, import it. Framework preset **Other**. No build command is needed.
+2. Vercel, **Add New Project**, import it. Framework preset **Other** (`vercel.json` already pins it, so a wrong auto-detection such as Express is overridden). Leave the build settings alone.
 3. Settings, **Environment Variables**, scope **Production** only, tick **Sensitive** on all of them:
 
    | Name                                                  | Value                                               |
@@ -69,7 +69,7 @@ The service is plain ESM TypeScript, and the same code runs anywhere Node 22 or 
 
 ```bash
 npm run build         # compiles to dist/
-npm run start:prod    # node dist/src/server.js, reading the same environment variables
+npm run start:prod    # node dist/src/local-server.js, reading the same environment variables
 ```
 
 There is also a `Dockerfile` for any container host. Nothing else changes: the issuer address, the keys and the apps stay the same, so
