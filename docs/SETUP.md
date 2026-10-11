@@ -24,7 +24,7 @@ Keep the output open. Each value goes into Vercel and into the password manager.
 4. In the Neon **SQL Editor**, paste `db/roles.sql`, replace the two passwords (`openssl rand -hex 24`) and run it. That makes
    `oidc_app` (what the service runs as) and `oidc_backup`.
 5. Build the service's address: the **pooled** host (with `-pooler`), user `oidc_app`, its password. That is `DATABASE_URL`.
-6. In **Compute**, set autoscaling to 0.25 CU maximum and leave scale to zero on.
+6. In **Compute**, set autoscaling to 0.25 CU at most and leave scale to zero on. That is plenty for sign in traffic.
 
 ## 2. Short lived state (Upstash)
 
@@ -32,7 +32,7 @@ Keep the output open. Each value goes into Vercel and into the password manager.
 2. **Turn eviction OFF.** With it on, Redis may throw away a live session when it is full.
 3. Copy the REST URL and token (`UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`).
 
-Use a database of its own: it is not sharing a command allowance with the main website.
+Use a database of its own, so this service and the main website never compete for the same Redis.
 
 ## 3. The GitHub sign in
 

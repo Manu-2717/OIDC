@@ -13,12 +13,12 @@ import { FakeRedis, installFakeRedis } from "./fake-redis.js";
 import { Browser, FakeGitHub, FakeMemberSource, SECRETS, TEST_CLIENTS, exchangeCode, signInTo, type Harness } from "./helpers.js";
 
 /**
- * The free Upstash plan allows 500,000 commands a month, and every command counts, including each one inside a transaction. This pins
- * how many a sign in costs, so a change that quietly doubles it fails here instead of in an invoice (or an outage at month end).
+ * Every Redis command is a network round trip (and each one inside a transaction counts), so how many a sign in uses decides how quick it
+ * is and how much load it puts on Redis. This pins that number, so a change that quietly doubles it fails here.
  *
- * The limits are the measured cost plus a little room. If one is exceeded on purpose, raise it and say why in the commit.
+ * The limits are the measured number plus a little room. If one is exceeded on purpose, raise it and say why in the commit.
  */
-describe("what a sign in costs in Redis commands", () => {
+describe("how many Redis commands a sign in uses", () => {
   const redis = new FakeRedis();
   let undo: () => void;
   let h: Harness;
@@ -73,24 +73,24 @@ describe("what a sign in costs in Redis commands", () => {
     await close();
   });
 
-  const cost = async (fn: () => Promise<void>) => {
+  const used = async (fn: () => Promise<void>) => {
     const before = redis.commands.length;
     await fn();
     return redis.commands.length - before;
   };
 
-  it("stays within budget, and gets cheaper once someone is signed in", async () => {
+  it("stays within budget, and takes fewer once someone is signed in", async () => {
     const browser = new Browser();
 
-    const first = await cost(async () => {
+    const first = await used(async () => {
       const r = await signInTo(h, browser, { clientId: "quiz", githubLogin: "meter" });
       await exchangeCode(h, { clientId: "quiz", code: r.code!, verifier: r.verifier });
     });
-    const second = await cost(async () => {
+    const second = await used(async () => {
       const r = await signInTo(h, browser, { clientId: "forums" });
       await exchangeCode(h, { clientId: "forums", code: r.code!, verifier: r.verifier });
     });
-    const quiet = await cost(async () => {
+    const quiet = await used(async () => {
       await signInTo(h, browser, { clientId: "quiz", prompt: "none" });
     });
 

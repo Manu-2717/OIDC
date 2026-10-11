@@ -6,7 +6,7 @@ import { log } from "./log.js";
  * "Is this person a member of the club, and what is their role?" The answer belongs to the main website's database. This service never
  * writes there: it reads one view, `oidc_members_v`, through a login that can read that view and nothing else.
  *
- * Reading is made cheap and safe in three ways:
+ * Reading is made fast and safe in three ways:
  *  - the answer is kept for 10 minutes, so most sign ins and token calls never reach the main database (which may be asleep),
  *  - if the main database cannot be reached the last known answer is used, so sign in keeps working through an outage there,
  *  - after a failure the main database is left alone for 30 seconds instead of being retried by every request.

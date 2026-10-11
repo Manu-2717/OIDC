@@ -778,13 +778,13 @@ describe("more ways to misuse it", () => {
   });
 });
 
-describe("protecting the free quota", () => {
+describe("protecting Redis from a flood of anonymous starts", () => {
   it("limits starting a sign in from nothing, but not people who are already signed in", async () => {
     const limited = await startService({ limitOverrides: { authAnonIp: 4 } });
     try {
-      limited.github.addPerson("quota");
+      limited.github.addPerson("burst");
       const member = new Browser();
-      await signInTo(limited, member, { clientId: "quiz", githubLogin: "quota" });
+      await signInTo(limited, member, { clientId: "quiz", githubLogin: "burst" });
 
       const stranger = new Browser();
       const statuses: number[] = [];

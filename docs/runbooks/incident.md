@@ -11,7 +11,7 @@ curl -s https://oidc.fossclub.tech/readyz
 | You see                              | It means                                           | Do this                                                                                                            |
 | ------------------------------------ | -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
 | `{"ok":true,...}`, but sign in fails | Not Redis or Postgres. Probably GitHub or one app. | Check [githubstatus.com](https://www.githubstatus.com). Look at the app's own settings (secret, redirect address). |
-| `"state":false`                      | Redis is down or the daily allowance is used up    | Upstash console, the database, **Usage**. See below.                                                               |
+| `"state":false`                      | Redis is down, or refusing commands                | Upstash console, the database, **Usage**. See below.                                                               |
 | `"database":false`                   | Postgres is down, asleep too long, or out of hours | Neon console, the project `ufc-oidc`. See below.                                                                   |
 | the request itself fails             | This service is not running                        | Vercel, the project, **Deployments**. Roll back to the last good one (Promote).                                    |
 
@@ -20,15 +20,15 @@ Nothing secret is logged.
 
 ## Redis
 
-- **Out of commands** (the free plan is 500,000 a month): sign ins stop until the month resets. Quick relief is a second Upstash database
-  or a paid plan. Look at what used them: a loop in an app calling `/auth` with no session is the usual cause (the per address limits
-  slow one address down, not many).
+- **Refusing commands** (Upstash reports that a limit was reached): sign ins stop until the limit resets or is raised. Raise it in the
+  Upstash console, or add a second database. Look at what used them first: a loop in an app calling `/auth` with no session is the usual
+  cause (the per address limits slow one address down, not many).
 - **Flushed or lost:** everyone is signed out. They sign in again with one click each. Nothing else is lost.
 
 ## Postgres (Neon)
 
 - **Asleep:** the first request after a quiet spell takes a few seconds. It is not an incident.
-- **Out of compute hours or storage:** the Neon project page says so. Wait for the reset, or move the project to a plan with more.
+- **At a compute or storage limit:** the Neon project page says so. Raise the limit in the Neon console, or wait for it to reset.
 - **A bad migration or lost data:** restore from the backup ([backups.md](backups.md)). Accounts are recreated at a person's next sign in,
   with the same `sub` only if the row is restored, so restore before people sign in again if you can.
 

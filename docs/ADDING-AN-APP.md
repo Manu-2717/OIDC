@@ -117,5 +117,5 @@ const claims = tokens.claims(); // sub, name, email, member, role
 
 ## 4. Keep the app's own session reasonable
 
-Every sign in here costs a little of the free Redis allowance, and every app depends on this service being up. Give the app's own session
+Every sign in here is a handful of Redis calls, and every app depends on this service being up. Give the app's own session
 a day or more, not minutes, and let it use `prompt=none` only when it needs to re-check.

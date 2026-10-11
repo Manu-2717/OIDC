@@ -76,17 +76,14 @@ Apps should key their own users on `sub`.
 
 Because every app depends on this one service, apps should keep their own sessions for a day or more rather than asking again on every visit.
 
-## Cost on the free plans
+## Efficiency
 
-A sign in is a handful of Redis commands (measured by a test that fails if it grows): about **42** for a first sign in, about **20** for each
-further app, about **10** for a quiet check. The free Upstash plan is 500,000 a month, so roughly:
+Every Redis command is a network round trip, so the number a sign in uses decides how quick it is and how much load it puts on Redis. It is
+kept small, and a test (`test/commands.test.ts`) fails if it grows: about **42** commands for a first sign in, about **20** for each further
+app, about **10** for a quiet check.
 
-- 100 people a day signing in to two apps each is about 120,000 a month.
-- 1,000 active members each signing in to five apps a week would be about 500,000. That is the ceiling, so watch the Upstash graph in the
-  first weeks, and prefer longer app sessions to more sign ins.
-
-Postgres is touched only when someone really signs in (and for the five minute account cache), and anything unauthenticated never reaches
-it, so Neon sleeps when nobody is signing in.
+Postgres is touched only when someone really signs in (and for the five minute account cache). Anything unauthenticated never reaches it,
+so a flood of bad requests puts load on Redis and nothing else, and a quiet period leaves the database idle.
 
 ## Decisions, and why
 
@@ -99,4 +96,4 @@ it, so Neon sleeps when nobody is signing in.
 | Apps are listed in `clients.json`             | Adding one is a reviewed change, not an API call anyone could make.                                                              |
 | `sub` is our own id                           | Usernames change and GitHub ids are not ours to hand out.                                                                        |
 | Membership is pulled, cached, with a fallback | No sync job to break, and an outage elsewhere does not stop sign in.                                                             |
-| Redis for state, Postgres for what must last  | Expiry is free in Redis, and nothing precious is kept anywhere it can be flushed.                                                |
+| Redis for state, Postgres for what must last  | Expiry is built into Redis, and nothing precious is kept anywhere it can be flushed.                                             |
