@@ -1,0 +1,82 @@
+name: CI
+
+# Every push to main and every pull request into it. Nothing here touches a real service: the tests use in-memory stores and a fake GitHub,
+# and a throwaway Postgres for the SQL.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: "24"
+
+jobs:
+  check:
+    name: Format, lint, types, tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    # A real Postgres for the SQL (the migration, the grants and what the restricted login cannot do).
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run format:check
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run build
+
+      # The tests run twice: against the in-memory store, and through the real Upstash client library against a fake Redis server.
+      - run: npm test
+
+      - name: SQL against a real Postgres
+        env:
+          TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
+        run: npm run test:postgres
+
+      # The list of apps must be valid the way the service will read it.
+      - run: npm run clients:check
+
+  audit:
+    name: Known vulnerabilities in dependencies
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - run: npm ci --ignore-scripts
+
+      # Only what ships to production, and only what is serious: a dev tool's advisory is not a reason to block a sign in fix.
+      - run: npm audit --omit=dev --audit-level=high
