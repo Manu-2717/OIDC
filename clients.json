@@ -2,8 +2,8 @@
   {
     "client_id": "fossclub-site",
     "client_name": "USAR FOSS Club website",
-    "redirect_uris": ["https://www.fossclub.tech/api/auth/callback/fossclub"],
-    "post_logout_redirect_uris": ["https://www.fossclub.tech/"],
+    "redirect_uris": ["https://www.fossclub.tech/api/auth/callback/fossclub", "https://fossclub.tech/api/auth/callback/fossclub"],
+    "post_logout_redirect_uris": ["https://www.fossclub.tech/", "https://fossclub.tech/"],
     "type": "confidential",
     "trusted": true,
     "require_member": false,
