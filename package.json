@@ -23,12 +23,15 @@
     "keys:generate": "tsx scripts/generate-keys.ts",
     "db:migrate": "tsx --env-file-if-exists=.env scripts/migrate.ts",
     "db:check": "tsx --env-file-if-exists=.env scripts/db-check.ts",
+    "client:new": "tsx scripts/client-new.ts",
     "clients:check": "tsx --env-file-if-exists=.env scripts/clients-check.ts",
+    "accounts:seed": "tsx --env-file-if-exists=.env scripts/seed-accounts.ts",
     "account": "tsx --env-file-if-exists=.env scripts/account.ts",
     "test:postgres": "vitest run test/postgres.test.ts"
   },
   "dependencies": {
     "@upstash/redis": "^1.39.0",
+    "@vercel/functions": "^3.9.11",
     "express": "^5.3.0",
     "helmet": "^8.3.0",
     "jose": "^6.2.12",

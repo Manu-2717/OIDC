@@ -24,10 +24,12 @@ const CLAIMS = {
   profile: ["name", "preferred_username", "picture", "updated_at"],
   email: ["email", "email_verified"],
   club: ["member", "role"],
+  // Released only to apps registered with `release_github_id` (see clients.ts): the main website matches its members by it.
+  github: ["github_id"],
 } as const;
 
 /** The scopes this service knows. Anything else an app asks for is dropped by the provider. */
-export const SCOPES = ["openid", "profile", "email", "club"] as const;
+export const SCOPES = ["openid", "profile", "email", "club", "github"] as const;
 
 export const claimsFor = (snapshot: AccountSnapshot) => ({
   sub: snapshot.id,
@@ -38,6 +40,8 @@ export const claimsFor = (snapshot: AccountSnapshot) => ({
   updated_at: snapshot.updatedAt,
   member: snapshot.member,
   ...(snapshot.role ? { role: snapshot.role } : {}),
+  // Only ever put in a token when the app asked for the `github` scope, which only the apps allowed it can be granted.
+  ...(snapshot.githubId ? { github_id: snapshot.githubId } : {}),
 });
 
 export interface ProviderDeps {

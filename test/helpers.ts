@@ -109,6 +109,7 @@ export const TEST_CLIENTS = [
   { client_id: "staff", client_name: "Staff Room", redirect_uris: ["http://localhost:4003/cb"], require_member: true },
   { client_id: "outside", client_name: "Outside App", redirect_uris: ["http://localhost:4004/cb"], trusted: false },
   { client_id: "spa", client_name: "Single Page", redirect_uris: ["http://localhost:4005/cb"], type: "public" },
+  { client_id: "site", client_name: "Main Site", redirect_uris: ["http://localhost:4006/cb"], release_github_id: true },
 ];
 
 export const SECRETS: Record<string, string> = {
@@ -116,6 +117,7 @@ export const SECRETS: Record<string, string> = {
   FORUMS: "f".repeat(48),
   STAFF: "s".repeat(48),
   OUTSIDE: "o".repeat(48),
+  SITE: "w".repeat(48),
 };
 
 export interface Harness {

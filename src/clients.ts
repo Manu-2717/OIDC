@@ -36,6 +36,11 @@ const definition = z.object({
   trusted: z.boolean().default(true),
   /** Only people who are club members may use this app. */
   require_member: z.boolean().default(false),
+  /**
+   * Lets the app ask for the `github` scope, which adds the person's GitHub numeric id to the token. For the club's own main website only:
+   * it keys its member records by that id. Every other app sees a `sub` that is ours and nothing that identifies a GitHub account.
+   */
+  release_github_id: z.boolean().default(false),
 });
 
 export type ClientDefinition = z.infer<typeof definition>;
@@ -87,7 +92,7 @@ export function loadClients(raw: unknown, secrets: Record<string, string>): Load
       post_logout_redirect_uris: def.post_logout_redirect_uris,
       grant_types: ["authorization_code"],
       response_types: ["code"],
-      scope: "openid profile email club",
+      scope: def.release_github_id ? "openid profile email club github" : "openid profile email club",
       id_token_signed_response_alg: "RS256",
       application_type: "web",
       token_endpoint_auth_method: "none",
@@ -117,4 +122,52 @@ export function loadClients(raw: unknown, secrets: Record<string, string>): Load
   });
 
   return out;
+}
+
+export interface NewClientOptions {
+  id: string;
+  /** Shown to people on the sign in pages. Made from the id when it is not given. */
+  name?: string | undefined;
+  redirects: string[];
+  /** Where people land after signing out. The first redirect address's own site when it is not given. */
+  logout?: string[] | undefined;
+  membersOnly?: boolean | undefined;
+  /** A single page app or mobile app, which cannot keep a secret and relies on PKCE alone. */
+  publicApp?: boolean | undefined;
+  /** Not one of the club's own apps: people are asked to approve it. */
+  untrusted?: boolean | undefined;
+}
+
+const titleOf = (id: string) =>
+  id
+    .split("-")
+    .filter(Boolean)
+    .map((word) => word[0]!.toUpperCase() + word.slice(1))
+    .join(" ");
+
+/**
+ * The entry to put in `clients.json` for a new app, in the same shape and order as the others. It is not checked here: pass it through
+ * `loadClients` (the helper script does) so it is held to exactly the rules the running service applies.
+ */
+export function newClientEntry(o: NewClientOptions) {
+  const logout =
+    o.logout ??
+    o.redirects
+      .flatMap((address) => {
+        try {
+          return [`${new URL(address).origin}/`];
+        } catch {
+          return [];
+        }
+      })
+      .slice(0, 1);
+  return {
+    client_id: o.id,
+    client_name: o.name ?? `FOSS Club ${titleOf(o.id)}`,
+    redirect_uris: o.redirects,
+    post_logout_redirect_uris: logout,
+    type: o.publicApp ? "public" : "confidential",
+    trusted: !o.untrusted,
+    require_member: !!o.membersOnly,
+  };
 }

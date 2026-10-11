@@ -4,6 +4,15 @@ Any app that can "sign in with an OpenID Connect provider" can use this. Nothing
 
 ## 1. Register it
 
+The quick way is one command. It adds the entry to `clients.json`, makes the secret and prints the settings for both sides:
+
+```bash
+npm run client:new -- monkeytype --redirect https://monkeytype.fossclub.tech/auth/callback --members-only
+```
+
+Options: `--logout <address>`, `--name "<text>"`, `--public` (no secret, PKCE only), `--untrusted`. The secret is shown once. What the command
+does by hand is described below.
+
 Add it to `clients.json` (a reviewed change, so a pull request):
 
 ```json
@@ -26,6 +35,7 @@ Add it to `clients.json` (a reviewed change, so a pull request):
 | `type`                      | `confidential` for an app with a server (it has a secret). `public` for a single page or mobile app (PKCE only).     |
 | `trusted`                   | One of ours: people are signed in without being asked. Use `false` for anyone else's app: they see an approval page. |
 | `require_member`            | Only club members can use this app. Anyone else gets `access_denied` and a page saying why.                          |
+| `release_github_id`         | Lets the app ask for the `github` scope, which adds `github_id` to the token. For the main website only (see below). |
 
 Then give it a secret (confidential apps): a variable called `CLIENT_SECRET_` plus the id in capitals, dashes as underscores
 (`quiz` becomes `CLIENT_SECRET_QUIZ`). Make one with `openssl rand -base64 48`, put it in Vercel (Sensitive) and in the app's own settings.
@@ -130,3 +140,12 @@ npm run example        # then open http://localhost:4000
 ```
 
 Remove the two test registrations once the first real app is in.
+
+## The main website is the one app that gets the GitHub id
+
+Every app sees `sub`, which is ours and says nothing about GitHub. The main website is the exception: it keeps its member records by GitHub's
+numeric id, so it is registered with `"release_github_id": true` and asks for the `github` scope. Only an app with that flag may ask for
+it; any other app that does gets `invalid_scope`. Do not set the flag for an app that does not hold member records keyed by GitHub id.
+
+Seeding: `npm run accounts:seed` (dry run) and `npm run accounts:seed -- --apply` create an account for each current member before their
+first sign in, so they can be seen and blocked from the start. It is safe to run again.

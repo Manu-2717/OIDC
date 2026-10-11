@@ -83,12 +83,12 @@ export const membersOnlyPage = (p: { uid: string; csrf: string; clientName: stri
   layout(
     "Members only",
     `<h1>${esc(p.clientName)} is for club members</h1>
-<p>You signed in, but this account is not a member of USAR FOSS Club yet.</p>
-<p class="muted">Members sign up on the club's website with the same GitHub account.</p>
+<p>You signed in, but this GitHub account has not joined USAR FOSS Club yet.</p>
+<p class="muted">Sign in once on fossclub.tech with the same GitHub account, then come back here and try again.</p>
 <form method="post" action="/interaction/${esc(p.uid)}/abort">
   <input type="hidden" name="csrf" value="${esc(p.csrf)}">
   <div class="row">
-    <a class="button primary" href="${esc(p.infoUrl)}" rel="noopener">How to become a member</a>
+    <a class="button primary" href="${esc(p.infoUrl)}" rel="noopener">Sign in on fossclub.tech</a>
     <button type="submit">Go back</button>
   </div>
 </form>`,

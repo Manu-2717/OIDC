@@ -1,5 +1,15 @@
 [
   {
+    "client_id": "fossclub-site",
+    "client_name": "USAR FOSS Club website",
+    "redirect_uris": ["https://www.fossclub.tech/api/auth/callback/fossclub"],
+    "post_logout_redirect_uris": ["https://www.fossclub.tech/"],
+    "type": "confidential",
+    "trusted": true,
+    "require_member": false,
+    "release_github_id": true
+  },
+  {
     "client_id": "oidc-test",
     "client_name": "Sign-in test app",
     "redirect_uris": ["http://localhost:4000/callback"],

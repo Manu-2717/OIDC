@@ -42,16 +42,17 @@ own apps the approval is made on the spot.
 
 ## What is in the ID token
 
-| Claim                | Scope     | Source                                                 |
-| -------------------- | --------- | ------------------------------------------------------ |
-| `sub`                | `openid`  | Our own account id (a UUID). Never a GitHub id.        |
-| `name`               | `profile` | GitHub name, or the username if there is none          |
-| `preferred_username` | `profile` | GitHub username (can change; do not use as a key)      |
-| `picture`            | `profile` | GitHub avatar                                          |
-| `email`              | `email`   | GitHub's primary email, only if GitHub has verified it |
-| `email_verified`     | `email`   | true only for that verified address                    |
-| `member`             | `club`    | From the main website's database                       |
-| `role`               | `club`    | The member's role there, if any                        |
+| Claim                | Scope     | Source                                                                                     |
+| -------------------- | --------- | ------------------------------------------------------------------------------------------ |
+| `sub`                | `openid`  | Our own account id (a UUID). Never a GitHub id.                                            |
+| `github_id`          | `github`  | GitHub's numeric id. Only for apps registered with `release_github_id` (the main website). |
+| `name`               | `profile` | GitHub name, or the username if there is none                                              |
+| `preferred_username` | `profile` | GitHub username (can change; do not use as a key)                                          |
+| `picture`            | `profile` | GitHub avatar                                                                              |
+| `email`              | `email`   | GitHub's primary email, only if GitHub has verified it                                     |
+| `email_verified`     | `email`   | true only for that verified address                                                        |
+| `member`             | `club`    | From the main website's database                                                           |
+| `role`               | `club`    | The member's role there, if any                                                            |
 
 Apps should key their own users on `sub`.
 

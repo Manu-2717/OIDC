@@ -7,7 +7,7 @@ import { log } from "./log.js";
  * writes there: it reads one view, `oidc_members_v`, through a login that can read that view and nothing else.
  *
  * Reading is made fast and safe in three ways:
- *  - the answer is kept for 10 minutes, so most sign ins and token calls never reach the main database (which may be asleep),
+ *  - the answer is kept for 10 minutes (30 seconds when it is "not a member", so someone who has just joined is not kept waiting), so most sign ins and token calls never reach the main database (which may be asleep),
  *  - if the main database cannot be reached the last known answer is used, so sign in keeps working through an outage there,
  *  - after a failure the main database is left alone for 30 seconds instead of being retried by every request.
  */
@@ -58,6 +58,8 @@ export interface ResolvedMembership extends MemberStatus {
 }
 
 const CACHE_TTL = 600;
+/** "Not a member" is remembered only briefly: the usual reason is someone who has just joined and is coming back from the website. */
+const NEGATIVE_TTL = 30;
 const BREAKER_TTL = 30;
 const cacheKey = (githubId: string) => `oidc:member:${githubId}`;
 const BREAKER_KEY = "oidc:member:down";
@@ -79,7 +81,9 @@ export class MemberDirectory {
 
     try {
       const status = await this.source.lookup(githubId);
-      await this.state.exec([{ t: "set", key: cacheKey(githubId), value: JSON.stringify(status), ex: CACHE_TTL }]).catch(() => undefined);
+      await this.state
+        .exec([{ t: "set", key: cacheKey(githubId), value: JSON.stringify(status), ex: status.member ? CACHE_TTL : NEGATIVE_TTL }])
+        .catch(() => undefined);
       return { ...status, fresh: true };
     } catch (error) {
       log("warn", "member lookup failed, using the last known answer", { error: error instanceof Error ? error.message : String(error) });

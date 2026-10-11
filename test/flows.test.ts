@@ -30,7 +30,7 @@ describe("the discovery document", () => {
     expect(doc.grant_types_supported).toEqual(["authorization_code"]);
     expect(doc.code_challenge_methods_supported).toEqual(["S256"]);
     expect(doc.id_token_signing_alg_values_supported).toEqual(["RS256"]);
-    expect(doc.scopes_supported).toEqual(["openid", "profile", "email", "club"]);
+    expect(doc.scopes_supported).toEqual(["openid", "profile", "email", "club", "github"]);
     expect(doc).not.toHaveProperty("registration_endpoint");
     expect(doc).not.toHaveProperty("introspection_endpoint");
     expect(doc).not.toHaveProperty("device_authorization_endpoint");
@@ -264,6 +264,26 @@ describe("requests that must be refused", () => {
     const response = await browser.request(`${h.issuer}/interaction/anything-at-all`);
     expect(response.status).toBeGreaterThanOrEqual(400);
     expect(await response.text()).not.toMatch(/password/i);
+  });
+
+  it("gives the GitHub id only to an app registered for it, and only when it asks", async () => {
+    h.github.addPerson("tia");
+    const githubId = h.github.people.get("tia")!.id;
+
+    // The main site asks for the `github` scope and is allowed it.
+    const site = await signInTo(h, new Browser(), { clientId: "site", githubLogin: "tia", scope: "openid profile club github" });
+    const siteToken = await exchangeCode(h, { clientId: "site", code: site.code!, verifier: site.verifier });
+    expect((await idTokenClaims(String(siteToken.body.id_token), "site")).payload.github_id).toBe(githubId);
+
+    // Asking for less than it is allowed gives nothing extra.
+    const plain = await signInTo(h, new Browser(), { clientId: "site", githubLogin: "tia" });
+    const plainToken = await exchangeCode(h, { clientId: "site", code: plain.code!, verifier: plain.verifier });
+    expect((await idTokenClaims(String(plainToken.body.id_token), "site")).payload).not.toHaveProperty("github_id");
+
+    // Any other app asking for it is refused, not quietly given less.
+    const other = await signInTo(h, new Browser(), { clientId: "quiz", githubLogin: "tia", scope: "openid profile github" });
+    expect(other.error).toBe("invalid_scope");
+    expect(other.code).toBeNull();
   });
 
   it("does not issue a refresh token, even when asked for one", async () => {

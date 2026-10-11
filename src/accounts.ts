@@ -167,6 +167,8 @@ export class MemoryAccountRepo implements AccountRepo {
 /** What the rest of the service needs to know about an account, small enough to keep in the state store for a few minutes. */
 export interface AccountSnapshot {
   id: string;
+  /** GitHub's numeric id. Only released to the apps allowed the `github` scope. (Missing in snapshots cached before it was added.) */
+  githubId?: string;
   status: AccountStatus;
   login: string;
   name: string | null;
@@ -180,6 +182,8 @@ export interface AccountSnapshot {
 
 const SNAPSHOT_TTL = 300;
 const BLOCKED_SNAPSHOT_TTL = 60;
+/** Someone who is not a member yet is looked at again soon: they are probably on their way to join. */
+const NON_MEMBER_SNAPSHOT_TTL = 30;
 const snapshotKey = (id: string) => `oidc:acct:${id}`;
 
 export class AccountService {
@@ -197,6 +201,7 @@ export class AccountService {
     }
     return {
       id: row.id,
+      githubId: row.githubId,
       status: row.status,
       login: row.login,
       name: row.name,
@@ -215,7 +220,7 @@ export class AccountService {
         t: "set",
         key: snapshotKey(snapshot.id),
         value: JSON.stringify(snapshot),
-        ex: snapshot.status === "blocked" ? BLOCKED_SNAPSHOT_TTL : SNAPSHOT_TTL,
+        ex: snapshot.status === "blocked" ? BLOCKED_SNAPSHOT_TTL : snapshot.member ? SNAPSHOT_TTL : NON_MEMBER_SNAPSHOT_TTL,
       },
     ]);
   }

@@ -1,3 +1,4 @@
+import { waitUntil } from "@vercel/functions";
 import type { Pool } from "pg";
 import { log } from "./log.js";
 
@@ -18,7 +19,8 @@ export type AuditEvent =
   | "consent.declined"
   | "logout"
   | "account.blocked"
-  | "account.unblocked";
+  | "account.unblocked"
+  | "account.seeded";
 
 export interface AuditEntry {
   event: AuditEvent;
@@ -39,7 +41,23 @@ export const AUDIT_RETENTION_DAYS = 180;
 export class PgAuditLog implements AuditLog {
   constructor(private readonly pool: Pool) {}
 
-  async record(entry: AuditEntry) {
+  /**
+   * Most callers do not wait for this, so that writing a log line can never hold up a sign in. On Vercel a promise that nobody waits for
+   * can be cut off the moment the response has gone out, so the write is also handed to the platform (`waitUntil`), which keeps the
+   * instance alive until it has finished. Anywhere else `waitUntil` does nothing and the process simply carries on.
+   */
+  record(entry: AuditEntry): Promise<void> {
+    const written = this.write(entry);
+    try {
+      waitUntil(written);
+    } catch (error) {
+      log("warn", "could not hand an audit write to the platform", { error: error instanceof Error ? error.message : String(error) });
+    }
+    return written;
+  }
+
+  /** Never rejects: failing to record must never stop a person from signing in, but it must be loud. */
+  private async write(entry: AuditEntry) {
     try {
       await this.pool.query(
         `insert into audit_log (event, account_id, client_id, ip, user_agent, detail) values ($1, $2, $3, $4, $5, $6)`,
@@ -57,7 +75,6 @@ export class PgAuditLog implements AuditLog {
         await this.pool.query(`delete from audit_log where at < now() - make_interval(days => $1)`, [AUDIT_RETENTION_DAYS]);
       }
     } catch (error) {
-      // Failing to record must never stop a person from signing in, but it must be loud.
       log("error", "could not write an audit entry", { event: entry.event, error: error instanceof Error ? error.message : String(error) });
     }
   }

@@ -113,7 +113,7 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
     jwks,
     cookieKeys,
     csrfSecret: e.CSRF_SECRET,
-    membershipInfoUrl: e.MEMBERSHIP_INFO_URL ?? "https://www.fossclub.tech",
+    membershipInfoUrl: e.MEMBERSHIP_INFO_URL ?? "https://www.fossclub.tech/login",
     clientSecrets,
   };
 }
