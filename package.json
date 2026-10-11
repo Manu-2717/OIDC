@@ -21,6 +21,7 @@
     "check": "npm run typecheck && npm run lint && npm run format:check && npm run test",
     "keys:generate": "tsx scripts/generate-keys.ts",
     "db:migrate": "tsx --env-file-if-exists=.env scripts/migrate.ts",
+    "db:check": "tsx --env-file-if-exists=.env scripts/db-check.ts",
     "clients:check": "tsx --env-file-if-exists=.env scripts/clients-check.ts",
     "account": "tsx --env-file-if-exists=.env scripts/account.ts",
     "test:postgres": "vitest run test/postgres.test.ts"

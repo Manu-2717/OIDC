@@ -23,8 +23,9 @@ Keep the output open. Each value goes into Vercel and into the password manager.
    ```
 4. In the Neon **SQL Editor**, paste `db/roles.sql`, replace the two passwords (`openssl rand -hex 24`) and run it. That makes
    `oidc_app` (what the service runs as) and `oidc_backup`.
-5. Build the service's address: the **pooled** host (with `-pooler`), user `oidc_app`, its password. That is `DATABASE_URL`.
-6. In **Compute**, set autoscaling to 0.25 CU at most and leave scale to zero on. That is plenty for sign in traffic.
+5. Check it, without pasting anything anywhere: `DATABASE_URL="<the oidc_app address>" npm run db:check`. It says what is missing.
+6. Build the service's address: the **pooled** host (with `-pooler`), user `oidc_app`, its password. That is `DATABASE_URL`.
+7. In **Compute**, set autoscaling to 0.25 CU at most and leave scale to zero on. That is plenty for sign in traffic.
 
 ## 2. Short lived state (Upstash)
 
