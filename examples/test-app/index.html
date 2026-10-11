@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sign-in test app</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #f6f6f4;
+        --fg: #1b1b1a;
+        --muted: #6b6b66;
+        --card: #fff;
+        --line: #dcdcd6;
+        --accent: #1f6feb;
+        --good: #1a7f37;
+        --bad: #c62828;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #121211;
+          --fg: #ecece8;
+          --muted: #9a9a93;
+          --card: #1b1b1a;
+          --line: #33332f;
+          --accent: #6ea8ff;
+          --good: #4cc26b;
+          --bad: #ff7b72;
+        }
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--fg);
+        font:
+          15px/1.5 system-ui,
+          sans-serif;
+      }
+      main {
+        max-width: 760px;
+        margin: 0 auto;
+        padding: 24px 16px 64px;
+      }
+      h1 {
+        font-size: 18px;
+        margin: 0 0 4px;
+      }
+      h2 {
+        margin: 0;
+        font-size: 20px;
+      }
+      h3 {
+        margin: 0 0 8px;
+        font-size: 15px;
+      }
+      .muted {
+        color: var(--muted);
+        margin: 2px 0 0;
+      }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 16px;
+        margin: 14px 0;
+      }
+      .who {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+      }
+      .who img {
+        border-radius: 50%;
+      }
+      .badge {
+        display: inline-block;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 1px 10px;
+        margin: 0 6px 4px 0;
+        font-size: 13px;
+      }
+      .badge.yes {
+        border-color: var(--good);
+        color: var(--good);
+      }
+      .badge.no {
+        border-color: var(--bad);
+        color: var(--bad);
+      }
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 12px 0 0;
+      }
+      .btn {
+        display: inline-block;
+        padding: 8px 14px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        color: var(--fg);
+        text-decoration: none;
+        background: var(--card);
+      }
+      .btn.primary {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: #fff;
+      }
+      .btn.danger {
+        color: var(--bad);
+      }
+      .checks {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+      .checks li {
+        padding: 4px 0;
+      }
+      .checks li.ok::before {
+        content: "\2713 ";
+        color: var(--good);
+      }
+      .checks li.bad::before {
+        content: "\2717 ";
+        color: var(--bad);
+      }
+      pre {
+        margin: 0;
+        overflow: auto;
+        font-size: 13px;
+      }
+      .flash.error {
+        border-color: var(--bad);
+      }
+      .flash.ok,
+      .flash.info {
+        border-color: var(--accent);
+      }
+      .flash p {
+        margin: 4px 0 0;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Sign-in test app</h1>
+      <p class="muted" id="where">Loading...</p>
+      <div id="out"></div>
+    </main>
+
+    <script>
+      // Draws what the server reports (GET /api/state). Everything is added with textContent, so nothing from a token can become markup.
+      function h(tag, props, ...children) {
+        const el = document.createElement(tag);
+        for (const [key, value] of Object.entries(props || {})) {
+          if (key === "class") el.className = value;
+          else el.setAttribute(key, value);
+        }
+        for (const child of children.flat()) el.append(child);
+        return el;
+      }
+      const card = (...children) => h("section", { class: "card" }, ...children);
+      const pretty = (value) => h("pre", {}, JSON.stringify(value, null, 2));
+      const button = (label, href, extra = "") => h("a", { class: "btn " + extra, href }, label);
+
+      function notice(n) {
+        return h(
+          "section",
+          { class: "card flash " + n.kind },
+          h("h3", {}, n.title),
+          n.lines.map((line) => h("p", {}, line)),
+        );
+      }
+
+      function signedOut(state) {
+        return card(
+          h("h2", {}, "Not signed in"),
+          h("p", { class: "muted" }, "Each button below starts a real sign-in with " + state.issuer + "."),
+          h(
+            "p",
+            { class: "actions" },
+            button("Sign in with FOSS Club", "/login?client=any", "primary"),
+            button("Sign in (members only app)", "/login?client=members"),
+            button("Silent check (prompt=none)", "/login?client=any&prompt=none"),
+          ),
+        );
+      }
+
+      function signedIn(s) {
+        const c = s.claims;
+        return [
+          card(
+            h(
+              "div",
+              { class: "who" },
+              typeof c.picture === "string" ? h("img", { src: c.picture, alt: "", width: 56, height: 56 }) : "",
+              h(
+                "div",
+                {},
+                h("h2", {}, c.name || c.preferred_username || "Signed in"),
+                h("p", { class: "muted" }, "@" + (c.preferred_username || "") + " · " + (c.email || "no email shared")),
+              ),
+            ),
+            h(
+              "p",
+              {},
+              h("span", { class: "badge " + (c.member ? "yes" : "no") }, c.member ? "club member" : "not a member"),
+              c.role ? h("span", { class: "badge" }, c.role) : "",
+              h("span", { class: "badge" }, "signed in to " + s.clientId),
+            ),
+            h(
+              "p",
+              { class: "actions" },
+              button("Check session silently", "/login?client=" + s.clientKey + "&prompt=none"),
+              button("Sign in again (force)", "/login?client=" + s.clientKey + "&prompt=login"),
+              button("Sign out", "/logout", "danger"),
+            ),
+          ),
+          card(
+            h("h3", {}, "What this app checked"),
+            h(
+              "ul",
+              { class: "checks" },
+              s.checks.map((check) => h("li", { class: check.ok ? "ok" : "bad" }, h("b", {}, check.name), " " + check.detail)),
+            ),
+          ),
+          card(h("h3", {}, "ID token claims"), pretty(s.claims)),
+          card(h("h3", {}, "userinfo (called with the access token)"), pretty(s.userinfo)),
+          card(h("h3", {}, "ID token header"), pretty(s.header)),
+        ];
+      }
+
+      fetch("/api/state")
+        .then((response) => response.json())
+        .then((state) => {
+          document.getElementById("where").textContent = "Talking to " + state.issuer + " · this page is " + state.base;
+          document
+            .getElementById("out")
+            .replaceChildren(
+              ...(state.notice ? [notice(state.notice)] : []),
+              ...[state.signedIn ? signedIn(state.signedIn) : signedOut(state)].flat(),
+            );
+        })
+        .catch((error) => {
+          document.getElementById("where").textContent = "Could not reach the test app: " + error;
+        });
+    </script>
+  </body>
+</html>

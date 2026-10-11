@@ -13,7 +13,7 @@ export default tseslint.config(
   },
   {
     // Scripts talk to a person at a terminal, so printing is their job.
-    files: ["scripts/**", "test/**"],
+    files: ["scripts/**", "test/**", "examples/**"],
     rules: { "no-console": "off" },
   },
 );

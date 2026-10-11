@@ -1,1 +1,20 @@
-[]
+[
+  {
+    "client_id": "oidc-test",
+    "client_name": "Sign-in test app",
+    "redirect_uris": ["http://localhost:4000/callback"],
+    "post_logout_redirect_uris": ["http://localhost:4000/"],
+    "type": "public",
+    "trusted": true,
+    "require_member": false
+  },
+  {
+    "client_id": "oidc-test-members",
+    "client_name": "Sign-in test app (members only)",
+    "redirect_uris": ["http://localhost:4000/callback"],
+    "post_logout_redirect_uris": ["http://localhost:4000/"],
+    "type": "public",
+    "trusted": true,
+    "require_member": true
+  }
+]

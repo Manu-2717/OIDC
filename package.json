@@ -12,6 +12,7 @@
     "dev": "tsx watch --env-file-if-exists=.env src/local-server.ts",
     "start": "tsx --env-file-if-exists=.env src/local-server.ts",
     "build": "rm -rf dist && tsc -p tsconfig.build.json",
+    "example": "tsx examples/test-app/server.ts",
     "start:prod": "node dist/src/local-server.js",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",

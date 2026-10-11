@@ -119,3 +119,14 @@ const claims = tokens.claims(); // sub, name, email, member, role
 
 Every sign in here is a handful of Redis calls, and every app depends on this service being up. Give the app's own session
 a day or more, not minutes, and let it use `prompt=none` only when it needs to re-check.
+
+## Trying the service by hand
+
+`examples/test-app` is a small app that signs in with the hosted service and shows what an app receives: the checked ID token, its claims
+and the userinfo answer. It uses the two test registrations in `clients.json` (`oidc-test` and `oidc-test-members`, localhost only).
+
+```bash
+npm run example        # then open http://localhost:4000
+```
+
+Remove the two test registrations once the first real app is in.
