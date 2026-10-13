@@ -44,13 +44,9 @@
       "https://shellshift-ten.vercel.app/api/auth/callback",
       "http://localhost:3000/api/auth/callback"
     ],
-    "post_logout_redirect_uris": [
-      "https://shellshift.fossclub.tech/",
-      "https://shellshift-ten.vercel.app/",
-      "http://localhost:3000/"
-    ],
+    "post_logout_redirect_uris": ["https://shellshift.fossclub.tech/", "https://shellshift-ten.vercel.app/", "http://localhost:3000/"],
     "type": "confidential",
-    "trusted": false,
+    "trusted": true,
     "require_member": false
   }
 ]
