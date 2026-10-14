@@ -61,7 +61,7 @@
     "type": "confidential",
     "trusted": true,
     "require_member": false
-  }
+  },
   {
   "client_id": "ctf",
   "client_name": "CTF",
@@ -76,5 +76,5 @@
   "type": "confidential",
   "trusted": true,
   "require_member": true
-}
+},
 ]
