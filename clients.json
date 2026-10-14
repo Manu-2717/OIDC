@@ -48,5 +48,18 @@
     "type": "confidential",
     "trusted": true,
     "require_member": false
+  },
+  {
+    "client_id": "matiks",
+    "client_name": "Matiks",
+    "redirect_uris": [
+      "https://matiks.fossclub.tech/auth/callback",
+      "https://matiks-usarfoss.vercel.app/auth/callback",
+      "http://localhost:5173/auth/callback"
+    ],
+    "post_logout_redirect_uris": ["https://matiks.fossclub.tech/", "https://matiks-usarfoss.vercel.app/", "http://localhost:5173/"],
+    "type": "confidential",
+    "trusted": true,
+    "require_member": false
   }
 ]
