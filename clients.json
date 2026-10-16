@@ -74,7 +74,7 @@
   {
     "client_id": "quik-type",
     "client_name": "quiktype",
-    "redirect_uris": ["https://quik-type.onrender.com/auth/callback"],
+    "redirect_uris": ["https://quik-type.onrender.com/auth/callback", "https://api.quik-type.fossclub.tech/auth/callback"],
     "post_logout_redirect_uris": ["https://quik-type.vercel.app/", "https://quik-type.fossclub.tech/"],
     "type": "confidential",
     "trusted": true,
